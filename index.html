@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#132542">
+<link rel="manifest" href="./manifest.json">
+<title>Quiz Educativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14213D;
+    --ink-soft:#3C4A6B;
+    --paper:#EEF0E6;
+    --paper-card:#F8F7F1;
+    --gold:#D4A017;
+    --green:#3A7D44;
+    --brick:#B33A3A;
+    --teal:#2A6F97;
+    --border:#14213D;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(20,33,61,0.08) 1px, transparent 0);
+    background-size: 18px 18px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:24px 14px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:480px;
+  }
+  .eyebrow{
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  h1,h2,h3{
+    font-family:'Fraunces',serif;
+    margin:0;
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .brand h1{
+    font-size:26px;
+    font-weight:900;
+    letter-spacing:-0.01em;
+  }
+  .scoreboard{
+    font-family:'Space Mono',monospace;
+    background:var(--ink);
+    color:var(--paper-card);
+    border-radius:4px;
+    padding:6px 10px;
+    font-size:13px;
+    display:flex;
+    gap:10px;
+  }
+  .scoreboard b{color:var(--gold);}
+
+  /* ---- ticket card, elemento assinatura ---- */
+  .ticket{
+    background:var(--paper-card);
+    border:2px solid var(--border);
+    border-radius:10px;
+    position:relative;
+    padding:22px 20px;
+    margin-bottom:16px;
+  }
+  .ticket::before{
+    content:"";
+    position:absolute;
+    top:-9px; left:24px;
+    width:16px; height:16px;
+    background:var(--paper);
+    border:2px solid var(--border);
+    border-radius:50%;
+  }
+  .ticket::after{
+    content:"";
+    position:absolute;
+    top:-9px; right:24px;
+    width:16px; height:16px;
+    background:var(--paper);
+    border:2px solid var(--border);
+    border-radius:50%;
+  }
+  .perf{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:0;
+    border-top:2px dashed var(--ink-soft);
+    margin-top:34px;
+  }
+
+  /* ---- ecrã: nome ---- */
+  .lead{
+    font-size:15px;
+    color:var(--ink-soft);
+    margin:10px 0 18px;
+    line-height:1.5;
+  }
+  label.field-label{
+    font-family:'Space Mono',monospace;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-soft);
+    display:block;
+    margin-bottom:6px;
+  }
+  input[type=text]{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:17px;
+    padding:12px 14px;
+    border:2px solid var(--ink);
+    border-radius:6px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input[type=text]:focus{outline:3px solid var(--gold); outline-offset:1px;}
+
+  button{
+    font-family:'Inter',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    border-radius:6px;
+    border:2px solid var(--ink);
+    padding:13px 18px;
+    cursor:pointer;
+    background:var(--ink);
+    color:var(--paper-card);
+    transition:transform .12s ease;
+    width:100%;
+  }
+  button:hover{transform:translateY(-1px);}
+  button:active{transform:translateY(0px);}
+  button:focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
+  button:disabled{opacity:.45; cursor:not-allowed; transform:none;}
+  button.secondary{
+    background:var(--paper-card);
+    color:var(--ink);
+  }
+  .error-msg{
+    color:var(--brick);
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    min-height:18px;
+    margin-top:8px;
+  }
+
+  /* ---- categorias ---- */
+  .cat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .cat-btn{
+    background:var(--paper-card);
+    color:var(--ink);
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    padding:14px 12px;
+  }
+  .cat-btn .icon{font-size:22px;}
+  .cat-btn .name{font-size:14px; font-weight:700;}
+  .cat-btn.done{
+    background:repeating-linear-gradient(135deg, var(--paper-card), var(--paper-card) 6px, #E4E1D6 6px, #E4E1D6 12px);
+    color:var(--ink-soft);
+  }
+  .cat-btn.done .name::after{content:" ✓ jogada";font-weight:400; font-size:11px;}
+
+  /* ---- pergunta ---- */
+  .stamp{
+    display:inline-block;
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--teal);
+    border:1.5px solid var(--teal);
+    border-radius:3px;
+    padding:3px 8px;
+    transform:rotate(-2deg);
+    margin-bottom:14px;
+  }
+  .pergunta-texto{
+    font-family:'Fraunces',serif;
+    font-size:21px;
+    font-weight:600;
+    line-height:1.35;
+    margin-bottom:18px;
+    min-height:56px;
+  }
+  .feedback{
+    font-family:'Space Mono',monospace;
+    font-size:14px;
+    min-height:20px;
+    margin:10px 0 4px;
+  }
+  .feedback.ok{color:var(--green);}
+  .feedback.bad{color:var(--brick);}
+  .vidas{
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:14px;
+  }
+  .hearts span{margin-right:2px;}
+
+  /* ---- resultados ---- */
+  .stat-row{
+    display:flex;
+    justify-content:space-between;
+    font-family:'Space Mono',monospace;
+    font-size:14px;
+    padding:7px 0;
+    border-bottom:1px dashed rgba(20,33,61,0.2);
+  }
+  .stat-row b{color:var(--ink);}
+  .ranking-row{
+    display:flex;
+    justify-content:space-between;
+    font-family:'Space Mono',monospace;
+    font-size:13px;
+    padding:6px 0;
+  }
+  .ranking-row .pos{color:var(--gold); font-weight:700; width:22px;}
+  .hidden{display:none !important;}
+  .stack{display:flex; flex-direction:column; gap:10px;}
+  footer{
+    text-align:center;
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:22px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="brand">
+    <h1>Quiz&nbsp;Educativo</h1>
+    <div class="scoreboard hidden" id="scoreboard">PTS <b id="sb-pontos">0</b></div>
+  </div>
+
+  <!-- ECRÃ 1: NOME -->
+  <section id="tela-nome" class="ticket">
+    <span class="eyebrow">Bilhete de entrada</span>
+    <p class="lead">80 perguntas, 8 categorias. Erre três vezes e o jogo acaba — acerte e ganhe pontos para o placar.</p>
+    <label class="field-label" for="input-nome">O seu nome</label>
+    <input type="text" id="input-nome" placeholder="Ex: Maria" maxlength="30" autocomplete="off">
+    <div class="error-msg" id="erro-nome"></div>
+    <button id="btn-comecar">Começar a jogar</button>
+  </section>
+
+  <!-- ECRÃ 2: CATEGORIAS -->
+  <section id="tela-categorias" class="ticket hidden">
+    <span class="eyebrow" id="saudacao">Categorias</span>
+    <h2 style="font-size:19px;margin:6px 0 14px;">Escolha uma categoria</h2>
+    <div class="cat-grid" id="grade-categorias"></div>
+    <div class="error-msg" id="erro-categoria"></div>
+  </section>
+
+  <!-- ECRÃ 3: PERGUNTA -->
+  <section id="tela-jogo" class="ticket hidden">
+    <span class="stamp" id="stamp-categoria">Categoria</span>
+    <div class="pergunta-texto" id="texto-pergunta">Pergunta</div>
+    <label class="field-label" for="input-resposta">Resposta</label>
+    <input type="text" id="input-resposta" placeholder="Escreva aqui..." autocomplete="off">
+    <div class="feedback" id="feedback"></div>
+    <button id="btn-responder" style="margin-top:8px;">Responder</button>
+    <div class="vidas">
+      <span class="hearts" id="vidas-corações"></span> &nbsp;Pontos: <b id="pontos-jogo">0</b>
+    </div>
+  </section>
+
+  <!-- ECRÃ 4: FIM DE JOGO -->
+  <section id="tela-fim" class="ticket hidden">
+    <span class="eyebrow" id="fim-eyebrow">Resultado final</span>
+    <h2 id="fim-titulo" style="font-size:20px;margin:8px 0 14px;"></h2>
+    <div class="stack" style="margin-bottom:18px;">
+      <div class="stat-row"><span>Jogador</span><b id="res-nome"></b></div>
+      <div class="stat-row"><span>Pontos</span><b id="res-pontos"></b></div>
+      <div class="stat-row"><span>Acertos</span><b id="res-acertos"></b></div>
+      <div class="stat-row"><span>Erros</span><b id="res-erros"></b></div>
+      <div class="stat-row"><span>Categorias jogadas</span><b id="res-categorias"></b></div>
+    </div>
+    <h3 style="font-size:15px;margin-bottom:8px;">🏆 Melhores desta sessão</h3>
+    <div id="ranking-lista"></div>
+    <button id="btn-reiniciar" style="margin-top:16px;">Jogar novamente</button>
+  </section>
+
+  <footer>feito para telemóvel · funciona offline depois de instalado</footer>
+</div>
+
+<script>
+// ---------------------------------------------------------------------
+// BANCO DE PERGUNTAS (mesmo conteúdo da versão desktop, quizversao.py)
+// ---------------------------------------------------------------------
+const BANCO = {
+  "Historia": {icone:"📜", perguntas:{
+    "Em que ano começou a Segunda Guerra Mundial?": "1939",
+    "Em que ano terminou a Segunda Guerra Mundial?": "1945",
+    "Quem foi o primeiro imperador do Brasil?": "Pedro",
+    "Que civilização construiu as pirâmides de Gizé?": "Egípcios",
+    "Qual navegador chegou ao Brasil em 1500?": "Cabral",
+    "Em que ano o homem pisou na Lua pela primeira vez?": "1969",
+    "Qual império era governado por Júlio César?": "Romano",
+    "Que revolução ocorreu em França em 1789?": "Francesa",
+    "Em que país Nelson Mandela foi presidente?": "África do Sul",
+    "Que muro dividiu a Alemanha durante a Guerra Fria?": "Berlim",
+  }},
+  "Matemática": {icone:"➗", perguntas:{
+    "Quanto é 7 x 8?": "56",
+    "Quanto é a raiz quadrada de 81?": "9",
+    "Quantos lados tem um hexágono?": "6",
+    "Quanto é 15% de 200?": "30",
+    "Quanto é 100 dividido por 4?": "25",
+    "Quantos graus tem um ângulo reto?": "90",
+    "Qual é o resultado de 9 ao quadrado?": "81",
+    "Quantos lados tem um triângulo?": "3",
+    "Quanto é 12 + 13?": "25",
+    "Qual é o sucessor de 99?": "100",
+  }},
+  "Música": {icone:"🎵", perguntas:{
+    "Quantas cordas tem um violão clássico?": "6",
+    "Qual instrumento tem teclas brancas e pretas?": "Piano",
+    "Quem compôs a 'Nona Sinfonia'?": "Beethoven",
+    "Que instrumento de percussão é símbolo do samba?": "Pandeiro",
+    "Quantas notas existem na escala musical principal?": "7",
+    "Qual banda britânica cantou 'Hey Jude'?": "Beatles",
+    "Que instrumento de sopro é usado em fanfarras militares?": "Trompete",
+    "Que género musical nasceu na Jamaica com Bob Marley?": "Reggae",
+    "Quantas linhas tem uma pauta musical?": "5",
+    "Como se chama o símbolo que indica silêncio na música?": "Pausa",
+  }},
+  "Geografia": {icone:"🌍", perguntas:{
+    "Qual é o maior oceano do mundo?": "Pacífico",
+    "Qual é o maior deserto quente do mundo?": "Saara",
+    "Qual é o país mais populoso do mundo atualmente?": "Índia",
+    "Qual é a capital de Portugal?": "Lisboa",
+    "Qual é a capital de Angola?": "Luanda",
+    "Quantos continentes existem, segundo o modelo mais usado?": "6",
+    "Qual é a montanha mais alta do mundo?": "Evereste",
+    "Qual é o maior país do mundo em área?": "Rússia",
+    "Em que continente fica o Egito?": "África",
+    "Qual é a capital do Brasil?": "Brasília",
+  }},
+  "Ciências": {icone:"🔬", perguntas:{
+    "Qual é o planeta mais próximo do Sol?": "Mercúrio",
+    "Qual é o órgão responsável por bombear o sangue?": "Coração",
+    "Que gás os seres humanos precisam para respirar?": "Oxigénio",
+    "Quantos ossos tem o corpo humano adulto?": "206",
+    "Qual é a fórmula química da água?": "H2O",
+    "Que cientista propôs a teoria da relatividade?": "Einstein",
+    "Qual é o processo pelo qual as plantas produzem energia?": "Fotossíntese",
+    "Qual é o maior planeta do sistema solar?": "Júpiter",
+    "Quantos pulmões tem o ser humano?": "2",
+    "Em que se transforma a água quando congela?": "Gelo",
+  }},
+  "Português": {icone:"✍️", perguntas:{
+    "Qual é o plural de 'animal'?": "Animais",
+    "Como se chama a palavra que substitui um substantivo?": "Pronome",
+    "Qual é o antónimo de 'feliz'?": "Triste",
+    "Quantas vogais existem no alfabeto?": "5",
+    "Qual é o feminino de 'ator'?": "Atriz",
+    "Como se chama a figura de linguagem que compara duas coisas com 'como'?": "Comparação",
+    "Qual é o diminutivo de 'casa'?": "Casinha",
+    "Que classe gramatical indica uma ação?": "Verbo",
+    "Quem escreveu 'Os Lusíadas'?": "Camões",
+    "Qual é o sinónimo de 'rápido'?": "Veloz",
+  }},
+  "Informática": {icone:"💻", perguntas:{
+    "Qual é o sistema operativo criado pela Apple para computadores?": "MacOS",
+    "Como se chama a memória que guarda dados enquanto o PC está ligado?": "RAM",
+    "Qual é a linguagem usada para criar páginas web?": "HTML",
+    "Em que ano a empresa Google foi fundada?": "1998",
+    "Como se chama a ligação sem fios à internet?": "Wifi",
+    "Qual é o nome do sistema operativo de código aberto usado em servidores?": "Linux",
+    "Que tecla apaga caracteres à esquerda do cursor?": "Backspace",
+    "Como se chama um programa malicioso que danifica computadores?": "Vírus",
+    "Quantos bits tem um byte?": "8",
+    "Qual foi o primeiro nome da rede social criada por Mark Zuckerberg?": "Facebook",
+  }},
+  "Cultura Geral": {icone:"🌐", perguntas:{
+    "Quantos dias tem fevereiro num ano bissexto?": "29",
+    "Qual é a moeda oficial de Angola?": "Kwanza",
+    "Qual é o desporto mais popular do mundo?": "Futebol",
+    "Quantas cores tem o arco-íris?": "7",
+    "Qual é o animal terrestre mais rápido do mundo?": "Guepardo",
+    "Qual é a maior floresta tropical do mundo?": "Amazónia",
+    "Quantos jogadores de uma equipa de futebol estão em campo?": "11",
+    "Qual é o metal mais precioso usado em joalharia?": "Ouro",
+    "Quantas horas tem um dia?": "24",
+    "Que país tem uma folha de bordo (ácer) na sua bandeira?": "Canadá",
+  }},
+};
+
+const VIDAS_INICIAIS = 3;
+
+// ---------------------------------------------------------------------
+// ESTADO (em memória — sem localStorage)
+// ---------------------------------------------------------------------
+let estado = {
+  nome: "",
+  pontos: 0,
+  acertos: 0,
+  erros: 0,
+  vidas: VIDAS_INICIAIS,
+  jogadas: [],
+  categoriaAtual: null,
+  perguntas: [],
+  indice: 0,
+};
+
+let historicoSessao = []; // {nome, pontos} — ranking desta sessão do navegador
+
+function normalizar(texto){
+  return texto
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function embaralhar(array){
+  const a = array.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+// ---------------------------------------------------------------------
+// NAVEGAÇÃO ENTRE ECRÃS
+// ---------------------------------------------------------------------
+const telas = {
+  nome: document.getElementById("tela-nome"),
+  categorias: document.getElementById("tela-categorias"),
+  jogo: document.getElementById("tela-jogo"),
+  fim: document.getElementById("tela-fim"),
+};
+function mostrarTela(nomeTela){
+  Object.values(telas).forEach(t => t.classList.add("hidden"));
+  telas[nomeTela].classList.remove("hidden");
+  document.getElementById("scoreboard").classList.toggle("hidden", nomeTela === "nome");
+}
+
+// ---------------------------------------------------------------------
+// ECRÃ 1: NOME
+// ---------------------------------------------------------------------
+const inputNome = document.getElementById("input-nome");
+const erroNome = document.getElementById("erro-nome");
+
+document.getElementById("btn-comecar").addEventListener("click", iniciarJogo);
+inputNome.addEventListener("keydown", e => { if(e.key === "Enter") iniciarJogo(); });
+
+function iniciarJogo(){
+  const nome = inputNome.value.trim();
+  if(nome === ""){
+    erroNome.textContent = "Digite o seu nome";
+    return;
+  }
+  if(!/^[a-zA-ZÀ-ÿ\s]+$/.test(nome)){
+    erroNome.textContent = "Digite apenas letras";
+    return;
+  }
+  erroNome.textContent = "";
+  estado.nome = nome;
+  document.getElementById("saudacao").textContent = `Bem-vindo(a), ${nome}`;
+  montarGradeCategorias();
+  mostrarTela("categorias");
+}
+
+// ---------------------------------------------------------------------
+// ECRÃ 2: CATEGORIAS
+// ---------------------------------------------------------------------
+function montarGradeCategorias(){
+  const grade = document.getElementById("grade-categorias");
+  grade.innerHTML = "";
+  Object.keys(BANCO).forEach(cat => {
+    const jogada = estado.jogadas.includes(cat);
+    const btn = document.createElement("button");
+    btn.className = "cat-btn" + (jogada ? " done" : "");
+    btn.disabled = jogada || estado.vidas <= 0;
+    btn.innerHTML = `<span class="icon">${BANCO[cat].icone}</span><span class="name">${cat}</span>`;
+    btn.addEventListener("click", () => iniciarCategoria(cat));
+    grade.appendChild(btn);
+  });
+}
+
+function iniciarCategoria(categoria){
+  if(estado.jogadas.includes(categoria) || estado.vidas <= 0) return;
+  estado.categoriaAtual = categoria;
+  estado.perguntas = embaralhar(Object.entries(BANCO[categoria].perguntas));
+  estado.indice = 0;
+  document.getElementById("stamp-categoria").textContent = categoria;
+  document.getElementById("input-resposta").disabled = false;
+  document.getElementById("btn-responder").disabled = false;
+  mostrarTela("jogo");
+  mostrarPergunta();
+}
+
+// ---------------------------------------------------------------------
+// ECRÃ 3: PERGUNTA
+// ---------------------------------------------------------------------
+const textoPergunta = document.getElementById("texto-pergunta");
+const inputResposta = document.getElementById("input-resposta");
+const feedback = document.getElementById("feedback");
+const btnResponder = document.getElementById("btn-responder");
+
+btnResponder.addEventListener("click", verificarResposta);
+inputResposta.addEventListener("keydown", e => { if(e.key === "Enter") verificarResposta(); });
+
+function atualizarPlacar(){
+  document.getElementById("pontos-jogo").textContent = estado.pontos;
+  document.getElementById("sb-pontos").textContent = estado.pontos;
+  const coracoes = document.getElementById("vidas-corações");
+  coracoes.innerHTML = "";
+  for(let i=0;i<VIDAS_INICIAIS;i++){
+    const span = document.createElement("span");
+    span.textContent = i < estado.vidas ? "♥" : "♡";
+    coracoes.appendChild(span);
+  }
+}
+atualizarPlacar();
+
+function mostrarPergunta(){
+  feedback.textContent = "";
+  feedback.className = "feedback";
+
+  if(estado.indice >= estado.perguntas.length){
+    textoPergunta.textContent = "Categoria terminada! 🎉";
+    inputResposta.disabled = true;
+    btnResponder.disabled = true;
+    estado.jogadas.push(estado.categoriaAtual);
+    setTimeout(voltarOuTerminar, 1400);
+    return;
+  }
+  const [pergunta] = estado.perguntas[estado.indice];
+  textoPergunta.textContent = pergunta;
+  inputResposta.value = "";
+  inputResposta.focus();
+}
+
+function verificarResposta(){
+  if(inputResposta.value.trim() === "") return;
+
+  const [, respostaCorreta] = estado.perguntas[estado.indice];
+  const acertou = normalizar(inputResposta.value) === normalizar(respostaCorreta);
+
+  if(acertou){
+    feedback.textContent = "✅ Acertou!";
+    feedback.className = "feedback ok";
+    estado.pontos += 5;
+    estado.acertos += 1;
+  } else {
+    feedback.textContent = `❌ Errou! Resposta: ${respostaCorreta}`;
+    feedback.className = "feedback bad";
+    estado.erros += 1;
+    estado.vidas -= 1;
+  }
+
+  atualizarPlacar();
+  estado.indice += 1;
+
+  if(estado.vidas <= 0){
+    inputResposta.disabled = true;
+    btnResponder.disabled = true;
+    setTimeout(voltarOuTerminar, 1200);
+    return;
+  }
+  setTimeout(mostrarPergunta, 550);
+}
+
+function voltarOuTerminar(){
+  const acabouTudo = estado.jogadas.length === Object.keys(BANCO).length;
+  if(estado.vidas <= 0 || acabouTudo){
+    mostrarFimDeJogo();
+  } else {
+    montarGradeCategorias();
+    document.getElementById("erro-categoria").textContent = "";
+    mostrarTela("categorias");
+  }
+}
+
+// ---------------------------------------------------------------------
+// ECRÃ 4: FIM DE JOGO
+// ---------------------------------------------------------------------
+function mostrarFimDeJogo(){
+  document.getElementById("fim-titulo").textContent =
+    estado.vidas <= 0 ? "Fim de jogo — sem vidas! 💔" : "Completou todas as categorias! 🏆";
+  document.getElementById("res-nome").textContent = estado.nome;
+  document.getElementById("res-pontos").textContent = estado.pontos;
+  document.getElementById("res-acertos").textContent = estado.acertos;
+  document.getElementById("res-erros").textContent = estado.erros;
+  document.getElementById("res-categorias").textContent =
+    estado.jogadas.length ? estado.jogadas.join(", ") : "-";
+
+  historicoSessao.push({nome: estado.nome, pontos: estado.pontos});
+  renderRanking();
+  mostrarTela("fim");
+}
+
+function renderRanking(){
+  const melhores = {};
+  historicoSessao.forEach(r => {
+    if(!(r.nome in melhores) || r.pontos > melhores[r.nome]) melhores[r.nome] = r.pontos;
+  });
+  const ordenado = Object.entries(melhores).sort((a,b) => b[1]-a[1]).slice(0,5);
+  const lista = document.getElementById("ranking-lista");
+  lista.innerHTML = "";
+  if(ordenado.length === 0){
+    lista.innerHTML = `<div class="ranking-row"><span>Ainda não há resultados</span></div>`;
+    return;
+  }
+  ordenado.forEach(([nome, pontos], i) => {
+    const row = document.createElement("div");
+    row.className = "ranking-row";
+    row.innerHTML = `<span><span class="pos">${i+1}.</span>${nome}</span><b>${pontos} pts</b>`;
+    lista.appendChild(row);
+  });
+}
+
+document.getElementById("btn-reiniciar").addEventListener("click", () => {
+  estado = {
+    nome:"", pontos:0, acertos:0, erros:0, vidas:VIDAS_INICIAIS,
+    jogadas:[], categoriaAtual:null, perguntas:[], indice:0,
+  };
+  inputNome.value = "";
+  erroNome.textContent = "";
+  atualizarPlacar();
+  mostrarTela("nome");
+});
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .then(() => {
+        console.log("Quiz Educativo: modo offline preparado.");
+      })
+      .catch(erro => {
+        console.error("Erro ao registar o Service Worker:", erro);
+      });
+  });
+}
+</script>
+
+</body>
+</html>
