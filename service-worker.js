@@ -1,11 +1,11 @@
-const CACHE_NAME = "quiz-educativo-v3";
+const CACHE_NAME = "quiz-educativo-v4";
 
 const FICHEIROS = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png"
+  "./icon192.png",
+  "./icon512.png"
 ];
 
 self.addEventListener("install", event => {
